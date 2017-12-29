@@ -131,6 +131,8 @@ configure_mirrorlist(){
   # Get latest mirror list and save to tmpfile
   curl -so ${tmpfile} ${url}
   sed -i 's/^#Server = https/Server = https/g' ${tmpfile}
+  sed '/## /d' ${tmpfile}
+  sed '/#Server /d' ${tmpfile}
 
   # Backup and replace current mirrorlist file (if new file is non-zero)
   if [[ -s ${tmpfile} ]]; then
