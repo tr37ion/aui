@@ -288,7 +288,8 @@ setup_luks(){
 #SETUP LVM {{{
 setup_lvm(){
   print_title "LVM - https://wiki.archlinux.org/index.php/LVM"
-  print_warning "Last partition will take 100% of free space left"
+  print_info "LVM is a logical volume manager for the Linux kernel; it manages disk drives and similar mass-storage devices."
+  print_warning "\tLast partition will take 100% of free space left"
   if [[ $LUKS -eq 1 ]]; then
     pvcreate /dev/mapper/crypt
     vgcreate lvm /dev/mapper/crypt
