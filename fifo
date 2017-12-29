@@ -929,6 +929,8 @@ do
   echo " 6) $(mainmenu_item "${checklist[6]}"  "Configure Fstab"          "${fstab}" )"
   echo " 7) $(mainmenu_item "${checklist[7]}"  "Configure Network"        "${network}" )"
   echo " 8) $(mainmenu_item "${checklist[8]}"  "Configure Hostname"       "${host_name}" )"
+  echo " 7) $(mainmenu_item "${checklist[7]}"  "Configure Hostname"       "${host_name}" )"
+  echo " 8) $(mainmenu_item "${checklist[8]}"  "Configure Network"        "${network}" )"
   echo " 9) $(mainmenu_item "${checklist[9]}"  "Configure Timezone"       "${ZONE}/${SUBZONE}" )"
   echo "10) $(mainmenu_item "${checklist[10]}" "Configure Hardware Clock" "${hwclock}" )"
   echo "11) $(mainmenu_item "${checklist[11]}" "Configure Locale"         "${LOCALE}" )"
