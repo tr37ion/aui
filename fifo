@@ -683,6 +683,15 @@ configure_mkinitcpio(){
 }
 #}}}
 
+#CONFIGURE OPTIMZATIONS {{{
+configure_optimizations(){
+  print_title "Some system optimizations"
+  print_info " * More threads for compilations."
+  sed -i '/^#MAKEFLAGS="-j2"/MAKEFLAGS="-j$(nproc)"' ${MOUNTPOINT}/etc/makepkg.conf
+  arch_chroot "mkinitcpio -p linux"
+}
+#}}}
+
 #INSTALL BOOTLOADER {{{
 install_bootloader(){
   print_title "BOOTLOADER - https://wiki.archlinux.org/index.php/Bootloader"
