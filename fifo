@@ -134,6 +134,8 @@ configure_mirrorlist(){
   sed -i 's/^#Server = https/Server = https/g' ${tmpfile}
   sed -1 '/^## /d' ${tmpfile}
   sed -1 '/^#Server /d' ${tmpfile}
+  sed -i '/^## /d' ${tmpfile}
+  sed -i '/^#Server /d' ${tmpfile}
 
   # Backup and replace current mirrorlist file (if new file is non-zero)
   if [[ -s ${tmpfile} ]]; then
