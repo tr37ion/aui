@@ -202,7 +202,7 @@ create_partition_scheme(){
   print_title "https://wiki.archlinux.org/index.php/Partitioning"
   print_info "Partitioning a hard drive allows one to logically divide the available space into sections that can be accessed independently of one another."
   print_warning "Maintain Current does not work with LUKS"
-  partition_layouts=("Default" "LVM" "LVM+LUKS" "Maintain Current")
+  partition_layouts=("Default" "LVM" "LVM on LUKS" "Maintain Current")
   PS3="$prompt1"
   echo -e "Select partition scheme:"
   select OPT in "${partition_layouts[@]}"; do
@@ -260,14 +260,14 @@ create_partition(){
 
 #SETUP LUKS {{{
 setup_luks(){
-  print_title "Set LUKS encrypted drive."
-  print_danger "\tDo not select your /boot partition as you need it unencrypted."
+  print_title "Create LUKS encrypted drive."
+  print_danger "\tDon't select /boot partition as you need it to boot the LUKS drive."
   block_list=(`lsblk | grep 'part' | awk '{print "/dev/" substr($1,3)}'`)
   echo -e "Current disc structure:\n"
   lsblk
   echo -e "-------------------------\n"
   PS3="$prompt1"
-  echo -e "Select partition:"
+  echo -e "Select partition: "
   select OPT in "${block_list[@]}"; do
     if contains_element "$OPT" "${block_list[@]}"; then
       cryptsetup -c aes-xts-plain64 -y -s 512 --hash sha512 --iter-time 5000 --use-random luksFormat $OPT
@@ -293,16 +293,15 @@ setup_luks(){
 
 #SETUP LVM {{{
 setup_lvm(){
-  print_title "LVM - https://wiki.archlinux.org/index.php/LVM"
-  print_info "LVM is a logical volume manager for the Linux kernel; it manages disk drives and similar mass-storage devices."
-  print_warning "\tLast partition will take 100% of free space left"
+  print_title "Create LVM partitions inside the LUKS drive."
+  print_warning "\tThe last partition will take all free disk space left."
   if [[ $LUKS -eq 1 ]]; then
     pvcreate /dev/mapper/crypt
     vgcreate lvm /dev/mapper/crypt
   else
     block_list=(`lsblk | grep 'part' | awk '{print "/dev/" substr($1,3)}'`)
     PS3="$prompt1"
-    echo -e "Select partition:"
+    echo -e "Select partition: "
     select OPT in "${block_list[@]}"; do
       if contains_element "$OPT" "${block_list[@]}"; then
         pvcreate $OPT
@@ -313,14 +312,14 @@ setup_lvm(){
       fi
     done
   fi
-  read -p "Enter number of partitions [ex: 2]: " number_partitions
+  read -p "\nEnter number of desired partitions on the drive: " number_partitions
   i=1
   while [[ $i -le $number_partitions ]]; do
-    read -p "Enter $iª partition name [ex: home]: " partition_name
+    read -p "Enter $iª partition name (eg. root, home, var): " partition_name
     if [[ $i -eq $number_partitions ]]; then
       lvcreate -l 100%FREE lvm -n ${partition_name}
     else
-      read -p "Enter $iª partition size [ex: 25G, 200M]: " partition_size
+      read -p "Enter $iª partition size (eg. 256M, 25GB): " partition_size
       lvcreate -L ${partition_size} lvm -n ${partition_name}
     fi
     i=$(( i + 1 ))
@@ -331,20 +330,21 @@ setup_lvm(){
 
 #SELECT|FORMAT PARTITIONS {{{
 format_partitions(){
-  print_title "https://wiki.archlinux.org/index.php/File_Systems"
-  print_info "This step will select and format the selected partition where ArchLinux will be installed"
-  print_danger "\tAll data on the ROOT and SWAP partition will be LOST."
+  print_title "Format LVM partitions."
+  print_info "This step will help formating the partitionson which ArchLinux will be installed."
+  print_danger "\tAll data on partitions will be LOST."
   i=0
 
   block_list=(`lsblk | grep 'part\|lvm' | awk '{print substr($1,3)}'`)
 
   # check if there is no partition
   if [[ ${#block_list[@]} -eq 0 ]]; then
-    echo "No partition found"
+    echo "No more partition found.\n"
     exit 0
   fi
 
   partitions_list=()
+  # check for LVM partitions
   for OPT in ${block_list[@]}; do
     check_lvm=`echo $OPT | grep lvm`
     if [[ -z $check_lvm ]]; then
@@ -354,13 +354,14 @@ format_partitions(){
     fi
   done
 
-  # partitions based on boot system
+  # check for UEFI
   if [[ $UEFI -eq 1 ]]; then
     partition_name=("root" "EFI" "swap" "another")
   else
     partition_name=("root" "swap" "another")
   fi
 
+  # choose desired filesystem
   select_filesystem(){
     filesystems_list=( "btrfs" "ext2" "ext3" "ext4" "f2fs" "jfs" "nilfs2" "ntfs" "vfat" "xfs");
     PS3="$prompt1"
@@ -382,6 +383,7 @@ format_partitions(){
     [[ ${partition_name[i]} != another ]] && i=$(( i + 1 ))
   }
 
+  # format partition
   format_partition(){
     read_input_text "Confirm format $1 partition"
     if [[ $OPTION == y ]]; then
@@ -398,6 +400,7 @@ format_partitions(){
     fi
   }
 
+  # format swap partition
   format_swap_partition(){
     read_input_text "Confirm format $1 partition"
     if [[ $OPTION == y ]]; then
@@ -407,6 +410,7 @@ format_partitions(){
     fi
   }
 
+  # create swapfile
   create_swap(){
     swap_options=("partition" "file" "skip");
     PS3="$prompt1"
@@ -456,6 +460,7 @@ format_partitions(){
     fi
   }
 
+  # set EFI partition
   set_efi_partition(){
     efi_options=("/boot/efi" "/boot")
     PS3="$prompt1"
@@ -468,6 +473,7 @@ format_partitions(){
       fi
     done
   }
+
 
   while true; do
     PS3="$prompt1"
