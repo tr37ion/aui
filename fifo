@@ -271,6 +271,13 @@ setup_luks(){
   select OPT in "${block_list[@]}"; do
     if contains_element "$OPT" "${block_list[@]}"; then
       cryptsetup -c aes-xts-plain64 -y -s 512 --hash sha512 --iter-time 5000 --use-random luksFormat $OPT
+      while [ $? -ne 0 ]; do
+        sleep3
+        clear
+        echo -e "\nSomething went wrong - try again.\n"
+        cryptsetup -c aes-xts-plain64 -y -s 512 --hash sha512 --iter-time 5000 --use-random luksFormat $OPT
+      done
+      echo -e 'Try Again'; done
       cryptsetup luksOpen $OPT crypt
       #cryptsetup open --type luks $([[ $TRIM -eq 1 ]] && echo "--allow-discards") $OPT crypt
       LUKS=1
