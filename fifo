@@ -580,13 +580,20 @@ configure_fstab(){
     case "$REPLY" in
       1) genfstab -p ${MOUNTPOINT} >> ${MOUNTPOINT}/etc/fstab ;;
       2) if [[ $UEFI -eq 1 ]]; then
+      1)
+        genfstab -p ${MOUNTPOINT} >> ${MOUNTPOINT}/etc/fstab ;;
+      2)
+        if [[ $UEFI -eq 1 ]]; then
           genfstab -t PARTUUID -p ${MOUNTPOINT} >> ${MOUNTPOINT}/etc/fstab
         else
           genfstab -U -p ${MOUNTPOINT} >> ${MOUNTPOINT}/etc/fstab
         fi
         ;;
-      3) genfstab -L -p ${MOUNTPOINT} >> ${MOUNTPOINT}/etc/fstab ;;
-      *) invalid_option ;;
+      3)
+        genfstab -L -p ${MOUNTPOINT} >> ${MOUNTPOINT}/etc/fstab ;;
+      *)
+        invalid_option
+        ;;
     esac
     [[ -n $OPT ]] && break
   done
