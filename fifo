@@ -73,6 +73,7 @@ select_network(){
     nettype_list=$OPT
     case "$REPLY" in
       1)
+        pacman -S ipcalc
         network_static
         ;;
       2)
