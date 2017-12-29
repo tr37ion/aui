@@ -35,14 +35,14 @@ select_keymap(){
   PS3="$prompt1"
   print_info "The KEYMAP variable is specified in the /etc/rc.conf file. Keytable files are provided by the kbd package."
   echo -e "keymap list in /usr/share/kbd/keymaps"
-    select KEYMAP in "${keymap_list[@]}"; do
+  select KEYMAP in "${keymap_list[@]}"; do
     if contains_element "$KEYMAP" "${keymap_list[@]}"; then
       loadkeys "$KEYMAP";
       break
     else
       invalid_option
     fi
-    done
+  done
 }
 #}}}
 
@@ -130,13 +130,13 @@ configure_mirrorlist(){
 
   # Get latest mirror list and save to tmpfile
   curl -so ${tmpfile} ${url}
-  sed -i 's/^#Server/Server/g' ${tmpfile}
+  sed -i 's/^#Server = https/Server = https/g' ${tmpfile}
 
   # Backup and replace current mirrorlist file (if new file is non-zero)
   if [[ -s ${tmpfile} ]]; then
-  { echo " Backing up the original mirrorlist..."
+    { echo " Backing up the original mirrorlist..."
     mv -i /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.orig; } &&
-  { echo " Rotating the new list into place..."
+    { echo " Rotating the new list into place..."
     mv -i ${tmpfile} /etc/pacman.d/mirrorlist; }
   else
     echo " Unable to update, could not download list."
