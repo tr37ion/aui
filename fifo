@@ -273,12 +273,12 @@ setup_luks(){
       cryptsetup -c aes-xts-plain64 -y -s 512 --hash sha512 --iter-time 5000 --use-random luksFormat $OPT
       while [ $? -ne 0 ]; do
         sleep 3
-        clear
-        echo -e "\nSomething went wrong - try again.\n"
+        echo -e "\nSomething went wrong - try again."
         cryptsetup -c aes-xts-plain64 -y -s 512 --hash sha512 --iter-time 5000 --use-random luksFormat $OPT
       done
-      cryptsetup luksOpen $OPT crypt
-      #cryptsetup open --type luks $([[ $TRIM -eq 1 ]] && echo "--allow-discards") $OPT crypt
+      echo -e "Now lets open the newly encrypted partition.\n"
+      #cryptsetup luksOpen $OPT crypt
+      cryptsetup open --type luks $([[ $TRIM -eq 1 ]] && echo "--allow-discards") $OPT crypt
       LUKS=1
       LUKS_DISK=`echo ${OPT} | sed 's/\/dev\///'`
       break
