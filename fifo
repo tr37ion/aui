@@ -69,29 +69,35 @@ select_network(){
   nettype_list=("static" "dhcp");
   PS3="$prompt1"
   echo -e "Which type of network do you want to apply?\n"
-  select OPT in "${partition_layouts[@]}"; do
-    partition_layout=$OPT
+  select OPT in "${nettype_lists[@]}"; do
+    nettype_list=$OPT
     case "$REPLY" in
       1)
         network_static
         ;;
       2)
         network_dhcp
+        ;;
       *)
         invalid_option
         ;;
     esac
     [[ -n $OPT ]] && break
+  done
 }
 #}}}
 
-network_static{
-
+#NETWORK SETUP {{{
+network_static(){
+  dhcpcd stop
 }
+#}}}
 
-network_dhcp{
+#NETWORK SETUP {{{
+network_dhcp(){
   dhcpcd start
 }
+#}}}
 
 #MIRRORLIST {{{
 configure_mirrorlist(){
@@ -148,12 +154,13 @@ configure_mirrorlist(){
 #SETUP ALTERNATIVE DNS {{{
 setup_alt_dns(){
   cat <<- EOF > /etc/resolv.conf.head
-# Netcup
 nameserver 37.221.199.199
 nameserver 188.68.63.68
 nameserver 46.38.225.225
 nameserver 104.168.144.17
 nameserver 94.103.153.176
+EOF
+}
 #}}}
 
 #UMOUNT PARTITIONS {{{
